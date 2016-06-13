@@ -72,9 +72,9 @@ def process_records_interval_chars(interval):
 argCount = len(sys.argv)
 
 if argCount == 1:
-    print('No arguments provided. Without additional arguments, it should retrieve the most recent event from the '
-          'randomness beacon, and count the number of characters in the OutputValue the beacon returns. \n\t\tIt '
-          'should then print that output to standard out in comma-delimited format.')
+    print('[INFO]: No arguments provided. Without additional arguments, it should retrieve the most recent event '
+          'from the randomness beacon, and count the number of characters in the OutputValue the beacon returns. '
+          '\n[INFO ]: It should then print that output to standard out in comma-delimited format.')
     process_last_record_chars()
 
 else:
