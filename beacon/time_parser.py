@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 import re
 import datetime
 from dateutil.relativedelta import relativedelta
@@ -12,7 +12,6 @@ tz = get_localzone()
 
 def timestamp(dt):
     return (dt - datetime.datetime(1970, 1, 1, tzinfo=timezone.utc)).total_seconds()
-    # return dt.timestamp()
 
 
 def get_datetime_from_timestamp(timestamp):

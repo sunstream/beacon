@@ -48,7 +48,7 @@ def process_records_interval_chars(interval):
     end_timestamp = interval['to']
     current_timestamp = interval['from']
 
-    timestampt_delta = int(end_timestamp) - int(start_timestamp)
+    timestamp_delta = int(end_timestamp) - int(start_timestamp)
     current_record = beacon.get_current_record(start_timestamp)
     update_chars_dict(current_record)
 
@@ -63,7 +63,7 @@ def process_records_interval_chars(interval):
         current_record = beacon.get_record(current_response)
         update_chars_dict(current_record)
         if time.time() - start_time >= 5:
-            percentage = round((int(current_timestamp) - int(start_timestamp)) / timestampt_delta * 100, 1)
+            percentage = round((int(current_timestamp) - int(start_timestamp)) / timestamp_delta * 100, 1)
             print("[INFO ]: Now processing record for {}. {}% done..."
                   .format(time_parser.get_datetime_from_timestamp(current_timestamp), percentage))
             start_time = time.time()
