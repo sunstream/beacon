@@ -1,1 +1,85 @@
-# Placeholder for your script.
+#!/usr/bin/env python3
+import sys
+import os
+
+# NOTE: The below line is an awfully ugly workaround! I had to use it, because none of the versions listed below worked.
+# > import beacon
+# result: ImportError: No module named beacon
+# > from beacon import arg_parser
+# result: ImportError: No module named beacon
+# > from ..beacon import arg_parser
+# result: ValueError: Attempted relative import in non-package
+# I would be glad for an advice on how to solve this problem.
+sys.path.append(os.path.abspath(os.path.dirname(__file__) + '../../beacon'))
+
+import time
+import time_parser
+import beacon_client as beacon
+
+chars_dict = {}
+
+
+def print_input_hint():
+    print('[INFO ]: Please specify valid input arguments in format [--from "3 months 1 day 1 hour ago" '
+          '--to "1 month 1 hour ago"] (no [] required, but "" are obligatory).'
+          '\n\t\tMonth(s), day(s), hours(s) and minutes(s) are supported.'
+          '\n\t\tAll numbers should be positive.')
+
+
+def update_chars_dict(input_str):
+    for symbol in input_str:
+        chars_dict[symbol] = (chars_dict[symbol] + 1 if symbol in chars_dict.keys() else 1)
+
+
+def print_chars_dict():
+    print("[INFO ]: Done! Please see the results below.")
+    for pair in chars_dict.items():
+        print(str(pair[0]) + "," + str(pair[1]))
+
+
+def process_last_record_chars():
+    beacon_event = beacon.get_last_record()
+    update_chars_dict(beacon_event)
+    print_chars_dict()
+
+
+def process_records_interval_chars(interval):
+    start_timestamp = interval['from']
+    end_timestamp = interval['to']
+    current_timestamp = interval['from']
+
+    timestampt_delta = int(end_timestamp) - int(start_timestamp)
+    current_record = beacon.get_current_record(start_timestamp)
+    update_chars_dict(current_record)
+
+    start_time = time.time()
+
+    print("[INFO ]: Please wait, processing might take time. Status updates will be posted out."
+          .format(time_parser.get_datetime_from_timestamp(current_timestamp)))
+
+    while int(current_timestamp) <= int(end_timestamp):
+        current_response = beacon.get_next_response(current_timestamp)
+        current_timestamp = beacon.get_timestamp(current_response)
+        current_record = beacon.get_record(current_response)
+        update_chars_dict(current_record)
+        if time.time() - start_time >= 5:
+            percentage = round((int(current_timestamp) - int(start_timestamp)) / timestampt_delta * 100, 1)
+            print("[INFO ]: Now processing record for {}. {}% done..."
+                  .format(time_parser.get_datetime_from_timestamp(current_timestamp), percentage))
+            start_time = time.time()
+    print_chars_dict()
+
+argCount = len(sys.argv)
+
+if argCount == 1:
+    print('No arguments provided. Without additional arguments, it should retrieve the most recent event from the '
+          'randomness beacon, and count the number of characters in the OutputValue the beacon returns. \n\t\tIt '
+          'should then print that output to standard out in comma-delimited format.')
+    process_last_record_chars()
+
+else:
+    timestamps = time_parser.get_timestamps(sys.argv)
+    if not timestamps:
+        print_input_hint()
+    else:
+        process_records_interval_chars(timestamps)
